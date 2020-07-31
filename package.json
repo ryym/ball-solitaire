@@ -1,0 +1,27 @@
+{
+  "name": "ball-solitaire",
+  "private": true,
+  "scripts": {
+    "start": "npx webpack-dev-server",
+    "build": "npx webpack",
+    "build:w": "npx tsc -w"
+  },
+  "dependencies": {
+    "classnames": "^2.2.6",
+    "emotion": "^10.0.27",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@types/classnames": "^2.2.10",
+    "@types/react": "^16.9.43",
+    "@types/react-dom": "^16.9.8",
+    "clean-webpack-plugin": "^3.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  }
+}

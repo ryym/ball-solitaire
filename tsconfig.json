@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist_ts",
+    "target": "es2016",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "lib": ["dom", "dom.iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "downlevelIteration": true,
+    "jsx": "react"
+  },
+  "include": ["src"]
+}
