@@ -1,50 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { css } from 'emotion';
 import { createBoard, getMovableAddresses, getPossibleMoves, moveBall } from '../game';
 import type { Address, Board as BoardType, Move, Direction } from '../game';
 import { GameStateDisplay } from './GameStateDisplay';
 import { Board } from './Board';
-import { DirectionSelect } from './DirectionSelect';
 
 export function Game() {
   const { currentBoard, ...boardHistory } = useBoardHistory();
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
   const movableAddresses = new Set(getMovableAddresses(currentBoard));
-  const possibleDirs = new Set(getPossibleMoveDirs(currentBoard, selectedAddress));
-
-  const moveSelectedBall = (dir: Direction) => {
-    if (selectedAddress == null) {
-      throw new Error('invalid state: selectedAddress is null when ball moving');
-    }
-    const nextBoard = moveBall(currentBoard, selectedAddress, dir);
-    boardHistory.push(nextBoard);
-    setSelectedAddress(null);
-  };
 
   const executeMove = (from: Address, move: Move) => {
     const nextBoard = moveBall(currentBoard, from, move.dir);
     boardHistory.push(nextBoard);
-    setSelectedAddress(null);
-  };
-
-  const toggleBallSelection = (addr: Address) => {
-    setSelectedAddress(selectedAddress === addr ? null : addr);
-  };
-
-  const undoBoard = () => {
-    boardHistory.undo();
-    setSelectedAddress(null);
-  };
-
-  const redoBoard = () => {
-    boardHistory.redo();
-    setSelectedAddress(null);
-  };
-
-  const resetBoard = () => {
-    boardHistory.reset();
-    setSelectedAddress(null);
   };
 
   return (
@@ -54,19 +22,16 @@ export function Game() {
         <div className={styles.game}>
           <Board
             board={currentBoard}
-            selectedAddress={selectedAddress}
             movableAddresses={movableAddresses}
-            onSelectBall={toggleBallSelection}
             onSelectMove={executeMove}
           />
-          <DirectionSelect possibleDirs={possibleDirs} onSelect={moveSelectedBall} />
         </div>
         <div className={styles.actions}>
-          <button onClick={resetBoard}>Reset</button>
-          <button onClick={undoBoard} disabled={!boardHistory.canUndo}>
+          <button onClick={boardHistory.reset}>Reset</button>
+          <button onClick={boardHistory.undo} disabled={!boardHistory.canUndo}>
             Undo
           </button>
-          <button onClick={redoBoard} disabled={!boardHistory.canRedo}>
+          <button onClick={boardHistory.redo} disabled={!boardHistory.canRedo}>
             Redo
           </button>
         </div>

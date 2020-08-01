@@ -7,19 +7,11 @@ import { Ball } from './Ball';
 
 export interface Props {
   readonly board: BoardType;
-  readonly selectedAddress: Address | null;
   readonly movableAddresses: Set<Address>;
-  readonly onSelectBall: (address: Address) => void;
   readonly onSelectMove: (from: Address, move: Move) => void;
 }
 
-export function Board({
-  board,
-  selectedAddress,
-  movableAddresses,
-  onSelectBall,
-  onSelectMove,
-}: Props) {
+export function Board({ board, movableAddresses, onSelectMove }: Props) {
   const [hoveredAddress, setHoveredAddress] = useState<Address | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<Move[]>([]);
 
@@ -42,10 +34,7 @@ export function Board({
           onMouseEnter={() => handleCellMouseEnter(addr)}
           onMouseLeave={() => handleCellMouseLeave(addr)}
           key={addr}
-          className={classnames({
-            [styles.cell]: true,
-            [styles.cellSelected]: selectedAddress === addr,
-          })}
+          className={styles.cell}
         >
           {cell === 'Ball' && (
             <>
@@ -60,7 +49,7 @@ export function Board({
                   ))}
                 </>
               )}
-              <Ball address={addr} movable={movableAddresses.has(addr)} onSelect={onSelectBall} />
+              <Ball address={addr} movable={movableAddresses.has(addr)} />
             </>
           )}
         </div>
@@ -102,10 +91,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: '2px',
-  }),
-
-  cellSelected: css({
-    backgroundColor: '#fffc3185',
   }),
 
   dirSelect: css({

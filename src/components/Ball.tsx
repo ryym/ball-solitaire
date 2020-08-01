@@ -6,17 +6,15 @@ import type { Address } from '../game';
 export interface Props {
   readonly address: Address;
   readonly movable: boolean;
-  readonly onSelect: (addr: Address) => void;
 }
 
-export function Ball({ address, movable, onSelect }: Props) {
+export function Ball({ address, movable }: Props) {
   return (
     <div
       className={classnames({
         [styles.ball]: true,
         [styles.ballMovable]: movable,
       })}
-      onClick={() => movable && onSelect(address)}
     />
   );
 }
@@ -30,7 +28,6 @@ const styles = {
   }),
 
   ballMovable: css({
-    cursor: 'pointer',
     backgroundColor: '#ea6a2c',
   }),
 };
