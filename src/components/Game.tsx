@@ -61,30 +61,27 @@ export function Game() {
 
 const BOARD_SIDE_SIZE = 4;
 
-const useGameState = (): GameState => {
-  const [board, setBoard] = useState(() => createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2));
+const INITIAL_BOARD = createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2);
 
+const useGameState = (): GameState => {
   const [boardHistoryCursor, setBoardHistoryCursor] = useState(0);
-  const [boardHistories, setBoardHistories] = useState([board]);
+  const [boardHistories, setBoardHistories] = useState([INITIAL_BOARD]);
+
+  const board = boardHistories[boardHistoryCursor];
 
   const pushBordHistory = (board: BoardType) => {
-    setBoard(board);
     setBoardHistories([...boardHistories.slice(0, boardHistoryCursor + 1), board]);
     setBoardHistoryCursor(boardHistoryCursor + 1);
   };
 
   const undoBoardChange = () => {
     if (boardHistoryCursor >= 1) {
-      const prevBoard = boardHistories[boardHistoryCursor - 1];
-      setBoard(prevBoard);
       setBoardHistoryCursor(boardHistoryCursor - 1);
     }
   };
 
   const redoBoardChange = () => {
     if (boardHistoryCursor < boardHistories.length - 1) {
-      const nextBoard = boardHistories[boardHistoryCursor + 1];
-      setBoard(nextBoard);
       setBoardHistoryCursor(boardHistoryCursor + 1);
     }
   };
@@ -113,9 +110,7 @@ const useGameState = (): GameState => {
   };
 
   const resetBoard = () => {
-    const initialBoard = createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2);
-    setBoard(initialBoard);
-    setBoardHistories([initialBoard]);
+    setBoardHistories([INITIAL_BOARD]);
     setBoardHistoryCursor(0);
     setSelectedAddress(null);
   };
