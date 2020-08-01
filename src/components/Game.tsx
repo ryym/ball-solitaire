@@ -1,107 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { css } from 'emotion';
 import { createBoard, getMovableAddresses, getPossibleMoves, moveBall } from '../game';
 import type { Address, Board as BoardType, Move, Direction } from '../game';
 import { Board } from './Board';
 import { DirectionSelect } from './DirectionSelect';
 
-interface GameState {
-  readonly board: BoardType;
-
-  readonly canUndo: boolean;
-  readonly canRedo: boolean;
-  readonly undoBoardChange: () => void;
-  readonly redoBoardChange: () => void;
-
-  readonly selectedAddress: Address | null;
-  readonly totalBallCount: number;
-  readonly remainingBallCount: number;
-  readonly movableAddresses: Set<Address>;
-  readonly possibleDirs: Set<Direction>;
-
-  readonly moveSelectedBall: (dir: Direction) => void;
-  readonly toggleBallSelection: (addr: Address) => void;
-  readonly resetBoard: () => void;
-}
-
 export function Game() {
-  const state = useGameState();
-  return (
-    <div>
-      {state.movableAddresses.size === 0 &&
-        (state.remainingBallCount === 1 ? (
-          <div className={styles.msgSuccess}>CLEAR! Conguratulations!</div>
-        ) : (
-          <div className={styles.msgFailure}>
-            GAME OVER... But you captured {state.totalBallCount - state.remainingBallCount} balls!
-          </div>
-        ))}
-      <div className={styles.ballCount}>Remaining balls: {state.remainingBallCount}</div>
-      <div className={styles.game}>
-        <Board
-          board={state.board}
-          selectedAddress={state.selectedAddress}
-          movableAddresses={state.movableAddresses}
-          onSelectBall={state.toggleBallSelection}
-        />
-        <DirectionSelect possibleDirs={state.possibleDirs} onSelect={state.moveSelectedBall} />
-      </div>
-      <div className={styles.actions}>
-        <button onClick={state.resetBoard}>Reset</button>
-        <button onClick={state.undoBoardChange} disabled={!state.canUndo}>
-          Undo
-        </button>
-        <button onClick={state.redoBoardChange} disabled={!state.canRedo}>
-          Redo
-        </button>
-      </div>
-    </div>
-  );
-}
-
-const BOARD_SIDE_SIZE = 4;
-
-const INITIAL_BOARD = createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2);
-
-const useGameState = (): GameState => {
-  const [boardHistoryCursor, setBoardHistoryCursor] = useState(0);
-  const [boardHistories, setBoardHistories] = useState([INITIAL_BOARD]);
-
-  const board = boardHistories[boardHistoryCursor];
-
-  const pushBordHistory = (board: BoardType) => {
-    setBoardHistories([...boardHistories.slice(0, boardHistoryCursor + 1), board]);
-    setBoardHistoryCursor(boardHistoryCursor + 1);
-  };
-
-  const undoBoardChange = () => {
-    if (boardHistoryCursor >= 1) {
-      setBoardHistoryCursor(boardHistoryCursor - 1);
-    }
-  };
-
-  const redoBoardChange = () => {
-    if (boardHistoryCursor < boardHistories.length - 1) {
-      setBoardHistoryCursor(boardHistoryCursor + 1);
-    }
-  };
-
+  const { currentBoard, ...boardHistory } = useBoardHistory();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
-  const remainingBallCount = board.cells.filter((c) => c === 'Ball').length;
-
-  const movableAddresses = new Set(getMovableAddresses(board));
-
-  const possibleMoves: Move[] =
-    selectedAddress == null ? [] : getPossibleMoves(board, selectedAddress);
-  const possibleDirs = new Set(possibleMoves.map((m) => m.dir));
+  const movableAddresses = new Set(getMovableAddresses(currentBoard));
+  const possibleDirs = new Set(getPossibleMoveDirs(currentBoard, selectedAddress));
+  const ballCounts = countBalls(currentBoard);
 
   const moveSelectedBall = (dir: Direction) => {
     if (selectedAddress == null) {
       throw new Error('invalid state: selectedAddress is null when ball moving');
     }
-    const nextBoard = moveBall(board, selectedAddress, dir);
-    pushBordHistory(nextBoard);
+    const nextBoard = moveBall(currentBoard, selectedAddress, dir);
+    boardHistory.push(nextBoard);
     setSelectedAddress(null);
   };
 
@@ -109,28 +26,119 @@ const useGameState = (): GameState => {
     setSelectedAddress(selectedAddress === addr ? null : addr);
   };
 
-  const resetBoard = () => {
-    setBoardHistories([INITIAL_BOARD]);
-    setBoardHistoryCursor(0);
+  const undoBoard = () => {
+    boardHistory.undo();
     setSelectedAddress(null);
   };
 
-  return {
-    board,
-    canUndo: boardHistoryCursor > 0,
-    canRedo: boardHistoryCursor < boardHistories.length - 1,
-    undoBoardChange,
-    redoBoardChange,
-
-    totalBallCount: BOARD_SIDE_SIZE * BOARD_SIDE_SIZE - 1,
-    remainingBallCount,
-    selectedAddress,
-    movableAddresses,
-    possibleDirs,
-    moveSelectedBall,
-    toggleBallSelection,
-    resetBoard,
+  const redoBoard = () => {
+    boardHistory.redo();
+    setSelectedAddress(null);
   };
+
+  const resetBoard = () => {
+    boardHistory.reset();
+    setSelectedAddress(null);
+  };
+
+  return (
+    <div>
+      {movableAddresses.size === 0 &&
+        (ballCounts.remaining === 1 ? (
+          <div className={styles.msgSuccess}>CLEAR! Conguratulations!</div>
+        ) : (
+          <div className={styles.msgFailure}>
+            GAME OVER... But you captured {ballCounts.total - ballCounts.remaining} balls!
+          </div>
+        ))}
+      <div className={styles.ballCount}>Remaining balls: {ballCounts.remaining}</div>
+      <div className={styles.game}>
+        <Board
+          board={currentBoard}
+          selectedAddress={selectedAddress}
+          movableAddresses={movableAddresses}
+          onSelectBall={toggleBallSelection}
+        />
+        <DirectionSelect possibleDirs={possibleDirs} onSelect={moveSelectedBall} />
+      </div>
+      <div className={styles.actions}>
+        <button onClick={resetBoard}>Reset</button>
+        <button onClick={undoBoard} disabled={!boardHistory.canUndo}>
+          Undo
+        </button>
+        <button onClick={redoBoard} disabled={!boardHistory.canRedo}>
+          Redo
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface BoardHistoryState {
+  currentBoard: BoardType;
+  canUndo: boolean;
+  canRedo: boolean;
+  push: (b: BoardType) => void;
+  undo: () => void;
+  redo: () => void;
+  reset: () => void;
+}
+
+const BOARD_SIDE_SIZE = 4;
+
+const INITIAL_BOARD = createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2);
+
+const useBoardHistory = (): BoardHistoryState => {
+  const [cursor, setCursor] = useState(0);
+  const [history, setHistory] = useState([INITIAL_BOARD]);
+
+  const pushBoard = (board: BoardType) => {
+    setHistory([...history.slice(0, cursor + 1), board]);
+    setCursor(cursor + 1);
+  };
+
+  const undoBoardChange = () => {
+    if (cursor >= 1) {
+      setCursor(cursor - 1);
+    }
+  };
+
+  const redoBoardChange = () => {
+    if (cursor < history.length - 1) {
+      setCursor(cursor + 1);
+    }
+  };
+
+  const resetHistory = () => {
+    setHistory([INITIAL_BOARD]);
+    setCursor(0);
+  };
+
+  return {
+    currentBoard: history[cursor],
+    canUndo: cursor > 0,
+    canRedo: cursor < history.length - 1,
+    push: pushBoard,
+    undo: undoBoardChange,
+    redo: redoBoardChange,
+    reset: resetHistory,
+  };
+};
+
+interface BallCounts {
+  readonly total: number;
+  readonly remaining: number;
+}
+
+const countBalls = (b: BoardType): BallCounts => {
+  const total = b.sideSize * b.sideSize - 1;
+  const remaining = b.cells.filter((c) => c === 'Ball').length;
+  return { total, remaining };
+};
+
+const getPossibleMoveDirs = (b: BoardType, from: Address | null): Direction[] => {
+  const possibleMoves: Move[] = from == null ? [] : getPossibleMoves(b, from);
+  return possibleMoves.map((m) => m.dir);
 };
 
 const styles = {
