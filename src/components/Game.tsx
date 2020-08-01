@@ -100,6 +100,12 @@ const styles = {
   container: css({
     display: 'flex',
     justifyContent: 'center',
+
+    '> main': {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
   }),
 
   game: css({
