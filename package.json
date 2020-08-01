@@ -4,6 +4,7 @@
   "scripts": {
     "start": "npx webpack-dev-server",
     "build": "npx webpack",
+    "build:PROD": "NODE_ENV=production npx webpack",
     "build:w": "npx tsc -w"
   },
   "dependencies": {
