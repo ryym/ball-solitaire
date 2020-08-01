@@ -8,6 +8,7 @@ import { DirectionSelect } from './DirectionSelect';
 interface GameState {
   readonly board: BoardType;
   readonly selectedAddress: Address | null;
+  readonly totalBallCount: number;
   readonly remainingBallCount: number;
   readonly movableAddresses: Set<Address>;
   readonly possibleDirs: Set<Direction>;
@@ -20,6 +21,14 @@ export function Game() {
   const state = useGameState();
   return (
     <div>
+      {state.movableAddresses.size === 0 &&
+        (state.remainingBallCount === 1 ? (
+          <div className={styles.msgSuccess}>CLEAR! Conguratulations!</div>
+        ) : (
+          <div className={styles.msgFailure}>
+            GAME OVER... But you captured {state.totalBallCount - state.remainingBallCount} balls!
+          </div>
+        ))}
       <div className={styles.ballCount}>Remaining balls: {state.remainingBallCount}</div>
       <div className={styles.game}>
         <Board
@@ -37,8 +46,10 @@ export function Game() {
   );
 }
 
+const BOARD_SIDE_SIZE = 4;
+
 const useGameState = (): GameState => {
-  const [board, setBoard] = useState(() => createBoard(4, 2));
+  const [board, setBoard] = useState(() => createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2));
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
   const remainingBallCount = board.cells.filter((c) => c === 'Ball').length;
@@ -63,12 +74,13 @@ const useGameState = (): GameState => {
   };
 
   const resetBoard = () => {
-    setBoard(createBoard(4, 2));
+    setBoard(createBoard(BOARD_SIDE_SIZE, BOARD_SIDE_SIZE / 2));
     setSelectedAddress(null);
   };
 
   return {
     board,
+    totalBallCount: BOARD_SIDE_SIZE * BOARD_SIDE_SIZE - 1,
     remainingBallCount,
     selectedAddress,
     movableAddresses,
@@ -80,8 +92,17 @@ const useGameState = (): GameState => {
 };
 
 const styles = {
+  msgSuccess: css({
+    color: '#3d993d;',
+    fontSize: '1.2em',
+  }),
+
+  msgFailure: css({
+    color: '#f00',
+  }),
+
   ballCount: css({
-    marginBottom: '8px',
+    margin: '8px 0',
   }),
 
   game: css({
