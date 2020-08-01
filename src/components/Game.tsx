@@ -42,26 +42,28 @@ export function Game() {
   };
 
   return (
-    <div>
-      <GameStateDisplay board={currentBoard} isFinished={movableAddresses.size === 0} />
-      <div className={styles.game}>
-        <Board
-          board={currentBoard}
-          selectedAddress={selectedAddress}
-          movableAddresses={movableAddresses}
-          onSelectBall={toggleBallSelection}
-        />
-        <DirectionSelect possibleDirs={possibleDirs} onSelect={moveSelectedBall} />
-      </div>
-      <div className={styles.actions}>
-        <button onClick={resetBoard}>Reset</button>
-        <button onClick={undoBoard} disabled={!boardHistory.canUndo}>
-          Undo
-        </button>
-        <button onClick={redoBoard} disabled={!boardHistory.canRedo}>
-          Redo
-        </button>
-      </div>
+    <div className={styles.container}>
+      <main>
+        <GameStateDisplay board={currentBoard} isFinished={movableAddresses.size === 0} />
+        <div className={styles.game}>
+          <Board
+            board={currentBoard}
+            selectedAddress={selectedAddress}
+            movableAddresses={movableAddresses}
+            onSelectBall={toggleBallSelection}
+          />
+          <DirectionSelect possibleDirs={possibleDirs} onSelect={moveSelectedBall} />
+        </div>
+        <div className={styles.actions}>
+          <button onClick={resetBoard}>Reset</button>
+          <button onClick={undoBoard} disabled={!boardHistory.canUndo}>
+            Undo
+          </button>
+          <button onClick={redoBoard} disabled={!boardHistory.canRedo}>
+            Redo
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
@@ -123,6 +125,11 @@ const getPossibleMoveDirs = (b: BoardType, from: Address | null): Direction[] =>
 };
 
 const styles = {
+  container: css({
+    display: 'flex',
+    justifyContent: 'center',
+  }),
+
   game: css({
     display: 'flex',
     marginBottom: '12px',
