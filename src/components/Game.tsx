@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { css } from 'emotion';
-import { createBoard, getMovableAddresses, getPossibleMoves, moveBall } from '../game';
-import type { Address, Board as BoardType, Move, Direction } from '../game';
+import { createBoard, getMovableAddresses, moveBall } from '../game';
+import type { Address, Board as BoardType, Move } from '../game';
 import { GameStateDisplay } from './GameStateDisplay';
 import { Board } from './Board';
 
@@ -89,11 +89,6 @@ const useBoardHistory = (): BoardHistoryState => {
     redo: redoBoardChange,
     reset: resetHistory,
   };
-};
-
-const getPossibleMoveDirs = (b: BoardType, from: Address | null): Direction[] => {
-  const possibleMoves: Move[] = from == null ? [] : getPossibleMoves(b, from);
-  return possibleMoves.map((m) => m.dir);
 };
 
 const styles = {
