@@ -49,7 +49,7 @@ export function Board({ board, movableAddresses, onSelectMove }: Props) {
                   ))}
                 </>
               )}
-              <Ball address={addr} movable={movableAddresses.has(addr)} />
+              <Ball movable={movableAddresses.has(addr)} />
             </>
           )}
         </div>

@@ -1,14 +1,12 @@
 import React from 'react';
 import { css } from 'emotion';
 import classnames from 'classnames';
-import type { Address } from '../game';
 
 export interface Props {
-  readonly address: Address;
   readonly movable: boolean;
 }
 
-export function Ball({ address, movable }: Props) {
+export function Ball({ movable }: Props) {
   return (
     <div
       className={classnames({
