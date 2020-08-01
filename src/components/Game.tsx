@@ -22,6 +22,12 @@ export function Game() {
     setSelectedAddress(null);
   };
 
+  const executeMove = (from: Address, move: Move) => {
+    const nextBoard = moveBall(currentBoard, from, move.dir);
+    boardHistory.push(nextBoard);
+    setSelectedAddress(null);
+  };
+
   const toggleBallSelection = (addr: Address) => {
     setSelectedAddress(selectedAddress === addr ? null : addr);
   };
@@ -51,6 +57,7 @@ export function Game() {
             selectedAddress={selectedAddress}
             movableAddresses={movableAddresses}
             onSelectBall={toggleBallSelection}
+            onSelectMove={executeMove}
           />
           <DirectionSelect possibleDirs={possibleDirs} onSelect={moveSelectedBall} />
         </div>
