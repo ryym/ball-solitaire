@@ -8,6 +8,7 @@ import { DirectionSelect } from './DirectionSelect';
 interface GameState {
   readonly board: BoardType;
   readonly selectedAddress: Address | null;
+  readonly remainingBallCount: number;
   readonly movableAddresses: Set<Address>;
   readonly possibleDirs: Set<Direction>;
   readonly moveSelectedBall: (dir: Direction) => void;
@@ -19,6 +20,7 @@ export function Game() {
   const state = useGameState();
   return (
     <div>
+      <div className={styles.ballCount}>Remaining balls: {state.remainingBallCount}</div>
       <div className={styles.game}>
         <Board
           board={state.board}
@@ -38,6 +40,8 @@ export function Game() {
 const useGameState = (): GameState => {
   const [board, setBoard] = useState(() => createBoard(4, 2));
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+
+  const remainingBallCount = board.cells.filter((c) => c === 'Ball').length;
 
   const movableAddresses = new Set(getMovableAddresses(board));
 
@@ -65,6 +69,7 @@ const useGameState = (): GameState => {
 
   return {
     board,
+    remainingBallCount,
     selectedAddress,
     movableAddresses,
     possibleDirs,
@@ -75,6 +80,10 @@ const useGameState = (): GameState => {
 };
 
 const styles = {
+  ballCount: css({
+    marginBottom: '8px',
+  }),
+
   game: css({
     display: 'flex',
     marginBottom: '12px',
