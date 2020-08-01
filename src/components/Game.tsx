@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { css } from 'emotion';
 import { createBoard, getMovableAddresses, getPossibleMoves, moveBall } from '../game';
 import type { Address, Board as BoardType, Move, Direction } from '../game';
+import { GameStateDisplay } from './GameStateDisplay';
 import { Board } from './Board';
 import { DirectionSelect } from './DirectionSelect';
 
@@ -11,7 +12,6 @@ export function Game() {
 
   const movableAddresses = new Set(getMovableAddresses(currentBoard));
   const possibleDirs = new Set(getPossibleMoveDirs(currentBoard, selectedAddress));
-  const ballCounts = countBalls(currentBoard);
 
   const moveSelectedBall = (dir: Direction) => {
     if (selectedAddress == null) {
@@ -43,15 +43,7 @@ export function Game() {
 
   return (
     <div>
-      {movableAddresses.size === 0 &&
-        (ballCounts.remaining === 1 ? (
-          <div className={styles.msgSuccess}>CLEAR! Conguratulations!</div>
-        ) : (
-          <div className={styles.msgFailure}>
-            GAME OVER... But you captured {ballCounts.total - ballCounts.remaining} balls!
-          </div>
-        ))}
-      <div className={styles.ballCount}>Remaining balls: {ballCounts.remaining}</div>
+      <GameStateDisplay board={currentBoard} isFinished={movableAddresses.size === 0} />
       <div className={styles.game}>
         <Board
           board={currentBoard}
@@ -125,36 +117,12 @@ const useBoardHistory = (): BoardHistoryState => {
   };
 };
 
-interface BallCounts {
-  readonly total: number;
-  readonly remaining: number;
-}
-
-const countBalls = (b: BoardType): BallCounts => {
-  const total = b.sideSize * b.sideSize - 1;
-  const remaining = b.cells.filter((c) => c === 'Ball').length;
-  return { total, remaining };
-};
-
 const getPossibleMoveDirs = (b: BoardType, from: Address | null): Direction[] => {
   const possibleMoves: Move[] = from == null ? [] : getPossibleMoves(b, from);
   return possibleMoves.map((m) => m.dir);
 };
 
 const styles = {
-  msgSuccess: css({
-    color: '#3d993d;',
-    fontSize: '1.2em',
-  }),
-
-  msgFailure: css({
-    color: '#f00',
-  }),
-
-  ballCount: css({
-    margin: '8px 0',
-  }),
-
   game: css({
     display: 'flex',
     marginBottom: '12px',
