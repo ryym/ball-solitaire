@@ -14,6 +14,7 @@ export interface Props {
 export function Board({ board, movableAddresses, onSelectMove }: Props) {
   const [hoveredAddress, setHoveredAddress] = useState<Address | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<Move[]>([]);
+  const [simulatedMove, setSimulatedMove] = useState<Move | null>(null);
 
   const handleCellMouseEnter = (addr: Address) => {
     const moves = getPossibleMoves(board, addr);
@@ -44,14 +45,23 @@ export function Board({ board, movableAddresses, onSelectMove }: Props) {
                     <div
                       key={m.dir}
                       className={classnames(styles.dirSelect, getDirSelectClass(m.dir))}
-                      onClick={() => onSelectMove(addr, m)}
+                      onClick={() => {
+                        onSelectMove(addr, m);
+                        setSimulatedMove(null);
+                      }}
+                      onMouseEnter={() => setSimulatedMove(m)}
+                      onMouseLeave={() => setSimulatedMove(null)}
                     />
                   ))}
                 </>
               )}
-              <Ball movable={movableAddresses.has(addr)} />
+              <Ball
+                movable={movableAddresses.has(addr)}
+                willBreak={addr === simulatedMove?.broken}
+              />
             </>
           )}
+          {addr === simulatedMove?.dest && <Ball willPut />}
         </div>
       ))}
     </div>
